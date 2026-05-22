@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>AI Rock Paper Scissors</title>
+
+    <style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial;
+}
+
+body{
+
+    height:100vh;
+
+    background:
+    linear-gradient(
+        135deg,
+        #0f172a,
+        #111827,
+        #1e293b
+    );
+
+    overflow:hidden;
+
+    color:white;
+}
+
+.container{
+
+    display:flex;
+
+    height:100vh;
+}
+
+.left-panel{
+
+    width:35%;
+
+    padding:30px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+}
+
+.right-panel{
+
+    width:65%;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+}
+
+.card{
+
+    background:rgba(255,255,255,0.06);
+
+    backdrop-filter:blur(12px);
+
+    border:1px solid rgba(255,255,255,0.08);
+
+    padding:28px;
+
+    border-radius:24px;
+
+    margin-bottom:20px;
+
+    box-shadow:0 8px 30px rgba(0,0,0,0.35);
+}
+
+h1{
+
+    font-size:46px;
+
+    margin-bottom:28px;
+
+    color:#38bdf8;
+}
+
+.info{
+
+    font-size:30px;
+
+    font-weight:bold;
+
+    margin-bottom:18px;
+
+    color:#f8fafc;
+}
+
+.score{
+
+    color:#22c55e;
+}
+
+.controls{
+
+    margin-top:20px;
+
+    font-size:22px;
+
+    line-height:2;
+
+    color:#facc15;
+}
+
+button{
+
+    padding:15px 28px;
+
+    font-size:22px;
+
+    border:none;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    margin-top:15px;
+
+    background:#38bdf8;
+
+    color:#0f172a;
+
+    font-weight:bold;
+
+    transition:0.3s;
+}
+
+button:hover{
+
+    transform:translateY(-2px);
+
+    background:#7dd3fc;
+}
+
+video{
+
+    width:850px;
+
+    height:600px;
+
+    border-radius:24px;
+
+    border:4px solid #38bdf8;
+
+    box-shadow:0 8px 30px rgba(0,0,0,0.4);
+}
+
+</style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- LEFT PANEL -->
+
+        <div class="left-panel">
+
+            <h1>AI RPS Game</h1>
+
+            <div
+                id="prediction"
+                class="box">
+
+                Your Move: Waiting...
+
+            </div>
+
+            <div
+                id="computer"
+                class="box">
+
+                Computer: Waiting...
+
+            </div>
+
+            <div
+                id="result"
+                class="box">
+
+                Result: Waiting...
+
+            </div>
+
+            <div
+                id="score"
+                class="box score">
+
+                You: 0 | Computer: 0
+
+            </div>
+
+            <button onclick="nextRound()">
+                Next Round
+            </button>
+
+            <button onclick="restartGame()">
+                Restart Game
+            </button>
+
+            <div class="controls">
+
+                [ N ] = Next Round<br>
+                [ R ] = Restart Game<br>
+                [ Q ] = Quit Game
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT PANEL -->
+
+        <div class="right-panel">
+
+            <video
+                id="camera"
+                autoplay>
+            </video>
+
+            <canvas
+                id="canvas"
+                width="850"
+                height="600"
+                style="display:none;">
+            </canvas>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        let roundLocked = false;
+
+        let gameRunning = true;
+
+        let stream = null;
+
+        startCamera();
+
+        async function startCamera(){
+
+            const video =
+            document.getElementById("camera");
+
+            stream =
+            await navigator.mediaDevices.getUserMedia({
+                video:true
+            });
+
+            video.srcObject = stream;
+
+            setInterval(sendFrame,1500);
+        }
+
+        async function sendFrame(){
+
+            if(roundLocked || !gameRunning){
+
+                return;
+            }
+
+            const video =
+            document.getElementById("camera");
+
+            const canvas =
+            document.getElementById("canvas");
+
+            const context =
+            canvas.getContext("2d");
+
+            context.drawImage(
+                video,
+                0,
+                0,
+                850,
+                600
+            );
+
+            const image =
+            canvas.toDataURL("image/jpeg");
+
+            try{
+
+                const response =
+                await fetch("/predict",{
+
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+
+                    body:JSON.stringify({
+                        image:image
+                    })
+                });
+
+                const data =
+                await response.json();
+
+                document.getElementById(
+                    "prediction"
+                ).innerText =
+                "Your Move: " +
+                data.prediction;
+
+                document.getElementById(
+                    "computer"
+                ).innerText =
+                "Computer: " +
+                data.computer;
+
+                document.getElementById(
+                    "result"
+                ).innerText =
+                "Result: " +
+                data.result;
+
+                document.getElementById(
+                    "score"
+                ).innerText =
+                "You: " +
+                data.player_score +
+                " | Computer: " +
+                data.computer_score;
+
+                if(data.prediction != "None"){
+
+                    roundLocked = true;
+                }
+
+            }
+
+            catch(error){
+
+                console.log(error);
+
+            }
+
+        }
+
+        function nextRound(){
+
+            roundLocked = false;
+
+            document.getElementById(
+                "prediction"
+            ).innerText =
+            "Your Move: Waiting...";
+
+            document.getElementById(
+                "computer"
+            ).innerText =
+            "Computer: Waiting...";
+
+            document.getElementById(
+                "result"
+            ).innerText =
+            "Result: Waiting...";
+        }
+
+        async function restartGame(){
+
+            await fetch("/reset",{
+                method:"POST"
+            });
+
+            location.reload();
+        }
+
+        // ---------------- KEYBOARD CONTROLS ----------------
+
+        document.addEventListener(
+            "keydown",
+            function(event){
+
+                const key =
+                event.key.toLowerCase();
+
+                // NEXT ROUND
+
+                if(key === "n"){
+
+                    nextRound();
+                }
+
+                // RESTART
+
+                if(key === "r"){
+
+                    restartGame();
+                }
+
+                // QUIT
+
+                if(key === "q"){
+
+                    gameRunning = false;
+
+                    if(stream){
+
+                        stream.getTracks().forEach(
+                            track => track.stop()
+                        );
+                    }
+
+                    document.getElementById(
+                        "result"
+                    ).innerText =
+                    "Result: Game Quit";
+                }
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>
