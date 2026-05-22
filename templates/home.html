@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>AI Rock Paper Scissors</title>
+
+   <style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial;
+}
+
+body{
+
+    height:100vh;
+
+    background:
+    linear-gradient(
+        135deg,
+        #0f172a,
+        #111827,
+        #1e293b
+    );
+
+    overflow:hidden;
+
+    color:white;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.container{
+
+    width:75%;
+
+    padding:60px;
+
+    border-radius:25px;
+
+    background:rgba(255,255,255,0.06);
+
+    backdrop-filter:blur(12px);
+
+    border:1px solid rgba(255,255,255,0.08);
+
+    text-align:center;
+
+    box-shadow:0 8px 30px rgba(0,0,0,0.35);
+}
+
+h1{
+
+    font-size:72px;
+
+    margin-bottom:25px;
+
+    color:#38bdf8;
+}
+
+p{
+
+    font-size:28px;
+
+    line-height:1.8;
+
+    color:#d1d5db;
+
+    margin-bottom:45px;
+}
+
+button{
+
+    padding:18px 42px;
+
+    font-size:24px;
+
+    border:none;
+
+    border-radius:14px;
+
+    cursor:pointer;
+
+    background:#38bdf8;
+
+    color:#0f172a;
+
+    font-weight:bold;
+
+    transition:0.3s;
+}
+
+button:hover{
+
+    transform:translateY(-3px);
+
+    background:#7dd3fc;
+}
+
+</style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>
+            AI Rock Paper Scissors
+        </h1>
+
+        <p>
+
+            A real-time Computer Vision based AI game
+            built using Flask, OpenCV, Mediapipe
+            and JavaScript.
+
+            <br><br>
+
+            Live hand tracking and gesture recognition
+            directly inside the browser.
+
+        </p>
+
+        <button onclick="startGame()">
+
+            Start Game
+
+        </button>
+
+    </div>
+
+    <script>
+
+        function startGame(){
+
+            window.location.href="/game";
+        }
+
+    </script>
+
+</body>
+
+</html>
